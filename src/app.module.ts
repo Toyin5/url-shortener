@@ -1,13 +1,19 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ShorturlController } from './shorturl/shorturl.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ShorturlModule } from './shorturl/shorturl.module';
 
 @Module({
-  imports: [MongooseModule.forRootAsync(), ConfigModule.forRoot()],
-  controllers: [AppController, ShorturlController],
-  providers: [AppService],
+  imports: [
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO'),
+      }),
+      inject: [ConfigService],
+    }),
+    ConfigModule.forRoot(),
+    ShorturlModule,
+  ],
 })
 export class AppModule { }
